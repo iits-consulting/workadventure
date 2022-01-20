@@ -384,19 +384,30 @@ export class SocketManager {
             // ToDo use const for https://webexapis.com/v1
             // ToDo make sure using inProgress is save enough (https://developer.webex.com/docs/api/v1/meetings/list-meetings)
             const params = `meetingType=meeting&state=inProgress&siteUrl=${WEBEX_SITE_URL}`;
-            const res = await Axios.get(`https://webexapis.com/v1/meetings?integrationTag=${roomId}&${params}`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${accessToken}`,
-                },
-            });
+            const res = await Axios.get(
+                `https://webexapis.com/v1/meetings?integrationTag=${encodeURIComponent(roomId)}&${params}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                }
+            );
             // ToDo add error handling
             console.log("[Back] Looking up meeting, got: ", res.data);
             const legalMeets = res?.data?.items;
             console.log("[Back] Legal meetings to choose from: ", legalMeets);
             let meetingId = legalMeets && legalMeets[0]?.id;
             // todo get meetingLink by meetingId #11
-            let meetingLink;
+            const resp = await Axios.get(`https://webexapis.com/v1/meetings/${meetingId}`, {
+                headers: {
+                    // TODO pull request method out into its own file
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
+            console.log("!!!!!! ", resp?.data);
+            let meetingLink = res?.data?.sipAddress;
             if (!meetingId) {
                 console.log("[Back] Generating new meeting link with client's token");
 
