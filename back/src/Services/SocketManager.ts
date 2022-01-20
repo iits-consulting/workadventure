@@ -398,20 +398,10 @@ export class SocketManager {
             const legalMeets = res?.data?.items;
             console.log("[Back] Legal meetings to choose from: ", legalMeets);
             let meetingId = legalMeets && legalMeets[0]?.id;
-            let meetingLink;
-            try {
-                if (meetingId) {
-                    const resp = await Axios.get(`https://webexapis.com/v1/meetings/${meetingId}`, {
-                        headers: {
-                            // TODO pull request method out into its own file
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${accessToken}`,
-                        },
-                    });
-                    meetingLink = resp?.data?.sipAddress;
-                    console.log(`[Back] Found already running meeting! ID: ${meetingId}, Link: ${meetingLink}`);
-                } else {
-                    console.log("[Back] Generating new meeting link with client's token");
+            let meetingLink = legalMeets && legalMeets[0]?.sipAddress;
+            if (!meetingId) {
+                console.log("[Back] Generating new meeting link with client's token");
+                try {
                     const resp = await Axios.post(
                         "https://webexapis.com/v1/meetings",
                         {
@@ -433,25 +423,24 @@ export class SocketManager {
                         }
                     );
 
-                    console.log(`[Back] Created a webex meeting with id: ${resp?.data?.id}`);
+                    console.log(`[Back] Created a webex meeting with id and webLink: ${resp?.data?.id}`);
                     console.log(`[Back] Created a webex meeting with webLink: ${resp?.data?.sipAddress}`);
                     meetingId = resp?.data?.id;
                     meetingLink = resp?.data?.sipAddress;
-                }
-
-                // ToDo better Error handling (response is 200 but with errors)
-                if (!meetingId || !meetingLink) {
-                    throw Error(`Meeting is not created or not found`);
-                }
-            } catch (e) {
-                if (Axios.isAxiosError(e)) {
-                    if (e.response) {
-                        throw Error(
-                            `Got an error asking Cisco to make a meeting for us: ${JSON.stringify(e.response.data)}`
-                        );
+                    // ToDo better Error handling (response is 200 but with errors)
+                    if (!meetingId) {
+                        throw Error("Meeting is not created");
                     }
+                } catch (e) {
+                    if (Axios.isAxiosError(e)) {
+                        if (e.response) {
+                            throw Error(
+                                `Got an error asking Cisco to make a meeting for us: ${JSON.stringify(e.response.data)}`
+                            );
+                        }
+                    }
+                    throw e;
                 }
-                throw e;
             }
 
             response.setMeetinglink(meetingLink);
