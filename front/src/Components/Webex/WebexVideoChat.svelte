@@ -325,6 +325,7 @@
     }
 
     function hangup() {
+        console.log("[Front] Hanging up")
         currentMeeting.leave().then(() => {
             currentMeeting = null;
         }).finally(() => {

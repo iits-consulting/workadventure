@@ -740,9 +740,11 @@ export class GameScene extends DirtyScene {
                     this.startWebex(roomId, meetingLink);
                 });
 
-                this.connection.UserLeftWebexRoom(() => {
-                    console.log("[Front] Got user left callback!");
-                    this.stopWebex();
+                this.connection.onUserLeftWebexRoom(() => {
+                    if (webexIntegration.meetingRunning) {
+                        console.log("[Front] Got user left callback and noticed meeting is running; ending meet now!");
+                        this.stopWebex();
+                    }
                 });
 
                 /**

@@ -44,6 +44,10 @@ export class WebexIntegration {
     private spaceWidget: { remove: () => void } | null = null;
     private meetingWidget: SvelteComponentDev | null = null;
 
+    get meetingRunning() {
+        return !!this.meetingWidget;
+    }
+
     get accessToken() {
         return this.storage.getItem(accessTokenKey);
     }
