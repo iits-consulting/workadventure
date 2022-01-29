@@ -32,6 +32,7 @@ import {
     WebexSessionError,
     WebexSessionQuery,
     WebexSessionResponse,
+    UserLeftWebexRoom,
     WebRtcDisconnectMessage,
     WebRtcSignalToClientMessage,
     WebRtcSignalToServerMessage,
@@ -63,6 +64,7 @@ import Debug from "debug";
 import { Admin } from "_Model/Admin";
 import crypto from "crypto";
 import { isUndefined } from "generic-type-guard";
+import { Server } from "grpc";
 
 const debug = Debug("sockermanager");
 
@@ -310,7 +312,7 @@ export class SocketManager {
                 }
             }
             //user leave previous world
-            this.notifyStopMeetOnRoomLeave(room);
+            this.notifyStopMeetOnRoomLeave(room, user);
             room.leave(user);
             this.updateUserList(room);
 
@@ -787,14 +789,13 @@ export class SocketManager {
         }
     }
 
-    private notifyStopMeetOnRoomLeave(room: GameRoom) {
+    private notifyStopMeetOnRoomLeave(room: GameRoom, user: User) {
         const peopleInRoom = [...room.getUsers().values()];
 
-        // TODO -> Remove?
-        //const webexSessionStop = new WebexSessionStop();
-        //webexSessionStop.setRoomid(room.roomUrl);
-        //const message = new ServerToClientMessage();
-        //message.setWebexsessionstop(webexSessionStop);
+        const userLeft = new UserLeftWebexRoom();
+        const message = new ServerToClientMessage();
+        message.setUserleftwebexroom(message);
+        console.log(`[Back] Notified browser that the user left the room.`);
 
         for (const person of peopleInRoom) {
             if (person.socket.writable) {

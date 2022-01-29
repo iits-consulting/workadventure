@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {onMount} from 'svelte'
+    import {onDestroy, onMount} from 'svelte'
     import {prevent_default} from "svelte/internal";
 
     export let meetingRoom: string;
@@ -331,6 +331,10 @@
             currentMeeting = null;
         });
     }
+
+    onDestroy(()=>{
+        hangup();
+    })
 
     onMount(async () => {
         await importWebex();

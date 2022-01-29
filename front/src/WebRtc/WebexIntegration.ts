@@ -160,7 +160,7 @@ export class WebexIntegration {
         }
 
         coWebsiteManager.insertCoWebsite((cowebsiteDiv) => {
-            new WebexVideoChat({
+            this.meetingWidget = new WebexVideoChat({
                 target: cowebsiteDiv,
                 props: {
                     meetingRoom: meetingUrl,
@@ -220,6 +220,7 @@ export class WebexIntegration {
         }
 
         if (this.meetingWidget) {
+            this.meetingWidget.$destroy();
             this.meetingWidget = null;
             await coWebsiteManager.closeCoWebsite();
         }
