@@ -399,7 +399,7 @@ export class SocketManager {
             console.log("[Back] Legal meetings to choose from: ", legalMeets);
             let meetingId = legalMeets && legalMeets[0]?.id;
             let meetingLink = legalMeets && legalMeets[0]?.sipAddress;
-            if (!meetingId) {
+            if (!meetingId || !meetingLink) {
                 console.log("[Back] Generating new meeting link with client's token");
                 try {
                     const resp = await Axios.post(
