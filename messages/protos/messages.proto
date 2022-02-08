@@ -16,6 +16,10 @@ message WebexSessionError {
   string location = 2;
 }
 
+message UserLeftWebexRoom {
+
+}
+
 /*********** PARTIAL MESSAGES **************/
 message PositionMessage {
   int32 x = 1;
@@ -309,6 +313,7 @@ message ServerToClientMessage {
     UserListMessage userListMessage = 30;
     WebexSessionResponse webexSessionResponse = 31;
     WebexSessionError webexSessionError = 32;
+    UserLeftWebexRoom userLeftWebexRoom = 33;
   }
 }
 

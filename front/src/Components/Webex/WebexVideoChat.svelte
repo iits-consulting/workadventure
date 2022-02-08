@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {onMount} from 'svelte'
+    import {onDestroy, onMount} from 'svelte'
     import {prevent_default} from "svelte/internal";
 
     export let meetingRoom: string;
@@ -325,12 +325,17 @@
     }
 
     function hangup() {
+        console.log("[Front] Hanging up")
         currentMeeting.leave().then(() => {
             currentMeeting = null;
         }).finally(() => {
             currentMeeting = null;
         });
     }
+
+    onDestroy(()=>{
+        hangup();
+    })
 
     onMount(async () => {
         await importWebex();

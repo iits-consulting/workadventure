@@ -44,6 +44,10 @@ export class WebexIntegration {
     private spaceWidget: { remove: () => void } | null = null;
     private meetingWidget: SvelteComponentDev | null = null;
 
+    get meetingRunning() {
+        return !!this.meetingWidget;
+    }
+
     get accessToken() {
         return this.storage.getItem(accessTokenKey);
     }
@@ -160,7 +164,7 @@ export class WebexIntegration {
         }
 
         coWebsiteManager.insertCoWebsite((cowebsiteDiv) => {
-            new WebexVideoChat({
+            this.meetingWidget = new WebexVideoChat({
                 target: cowebsiteDiv,
                 props: {
                     meetingRoom: meetingUrl,
@@ -220,6 +224,7 @@ export class WebexIntegration {
         }
 
         if (this.meetingWidget) {
+            this.meetingWidget.$destroy();
             this.meetingWidget = null;
             await coWebsiteManager.closeCoWebsite();
         }

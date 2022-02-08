@@ -740,6 +740,13 @@ export class GameScene extends DirtyScene {
                     this.startWebex(roomId, meetingLink);
                 });
 
+                this.connection.onUserLeftWebexRoom(() => {
+                    if (webexIntegration.meetingRunning) {
+                        console.log("[Front] Got user left callback and noticed meeting is running; ending meet now!");
+                        this.stopWebex();
+                    }
+                });
+
                 /**
                  * Triggered when we receive the JWT token to connect to Jitsi
                  */
@@ -1867,7 +1874,7 @@ ${escapedMessage}
         const webexAdHoc = allProps.get("webexAdHoc");
         const jitsiWidth = allProps.get("jitsiWidth") as number | undefined;
         // ToDo how to make sure jitsiRoom is unique within one map (case of undefined or bool type)
-        const jitsiRoom = allProps.get("jitsiRoom")?.toString() || 'RoomName';
+        const jitsiRoom = allProps.get("jitsiRoom")?.toString() || "RoomName";
 
         console.log("Jitsi: " + jitsiUrl);
         console.log("webexSpaceId: " + webexSpaceId);

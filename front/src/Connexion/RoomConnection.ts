@@ -26,6 +26,7 @@ import {
     TeleportMessageMessage,
     UserJoinedMessage,
     UserLeftMessage,
+    UserLeftWebexRoom,
     UserListMessage,
     UserMovedMessage,
     UserMovesMessage,
@@ -561,8 +562,8 @@ export class RoomConnection implements RoomConnection {
     public emitWebexSessionQuery(roomId: string, accessToken: string, roomName: string, jitsiRoomName: string) {
         const webexSessionQuery = new WebexSessionQuery();
         // unique room id for using as integrationTag (there length limit) for Webex API
-        const allowedLength = 60 - jitsiRoomName.length
-        const integrationTag = `${jitsiRoomName}-${roomId.substr(- 5 - allowedLength, allowedLength)}`
+        const allowedLength = 60 - jitsiRoomName.length;
+        const integrationTag = `${jitsiRoomName}-${roomId.substr(-5 - allowedLength, allowedLength)}`;
         webexSessionQuery.setRoomid(integrationTag);
         webexSessionQuery.setRoomname(roomName);
         webexSessionQuery.setAccesstoken(accessToken);
@@ -589,6 +590,13 @@ export class RoomConnection implements RoomConnection {
         console.log("[Front] Got an error from the backend. Passing it to GameScene.ts");
         this.onMessage(EventMessage.WEBEX_SESSION_ERROR, (message: WebexSessionError) => {
             callback(message.getMessage(), message.getLocation());
+        });
+    }
+
+    public onUserLeftWebexRoom(callback: () => void): void {
+        this.onMessage(EventMessage.USER_LEFT_WEBEX_ROOM, () => {
+            console.log("[Front] Found User Left message, ending the call...");
+            callback();
         });
     }
 
