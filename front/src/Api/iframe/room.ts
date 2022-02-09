@@ -8,6 +8,7 @@ import { apiCallback } from "./registeredCallbacks";
 import type { ITiledMap } from "../../Phaser/Map/ITiledMap";
 import type { WorkadventureRoomWebsiteCommands } from "./website";
 import website from "./website";
+import { webexIntegration } from "../../WebRtc/WebexIntegration";
 
 const enterStreams: Map<string, Subject<EnterLeaveEvent>> = new Map<string, Subject<EnterLeaveEvent>>();
 const leaveStreams: Map<string, Subject<EnterLeaveEvent>> = new Map<string, Subject<EnterLeaveEvent>>();
@@ -57,7 +58,8 @@ export class WorkadventureRoomCommands extends IframeApiContribution<Workadventu
         }
         subject.subscribe(callback);
     }
-    onLeaveZone(name: string, callback: () => void): void {
+    async onLeaveZone(name: string, callback: () => void): Promise<void> {
+        await webexIntegration.stop();
         let subject = leaveStreams.get(name);
         if (subject === undefined) {
             subject = new Subject<EnterLeaveEvent>();

@@ -218,9 +218,20 @@ export class WebexIntegration {
 
     public async stop() {
         if (this.spaceWidget) {
-            this.spaceWidget?.remove();
-            this.spaceWidget = null;
-            await coWebsiteManager.closeCoWebsite();
+            try {
+                // TODO -> There needs to be a better way to do this
+                const element: HTMLElement = document.getElementsByClassName(
+                    "wxc-button wxc-meeting-control__control-button wxc-button--cancel"
+                )[0] as HTMLElement;
+                element.click();
+            } catch (e) {
+                console.warn("[Front] Unable to end meet. Was it running to begin with?");
+            } finally {
+                await this.delay(500); // Wait half a second to make sure the meeting has been left
+                this.spaceWidget?.remove();
+                this.spaceWidget = null;
+                await coWebsiteManager.closeCoWebsite();
+            }
         }
 
         if (this.meetingWidget) {
