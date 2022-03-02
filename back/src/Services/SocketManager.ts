@@ -386,22 +386,23 @@ export class SocketManager {
             // ToDo use const for https://webexapis.com/v1
             // ToDo make sure using inProgress is save enough (https://developer.webex.com/docs/api/v1/meetings/list-meetings)
             const params = `meetingType=meeting&state=inProgress&siteUrl=${WEBEX_SITE_URL}`;
-            const res = await Axios.get(`https://webexapis.com/v1/meetings?integrationTag=${roomId}&${params}`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${accessToken}`,
-                },
-            });
+            const res = await Axios.get(
+                `https://webexapis.com/v1/meetings?integrationTag=${encodeURIComponent(roomId)}&${params}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                }
+            );
             // ToDo add error handling
             console.log("[Back] Looking up meeting, got: ", res.data);
             const legalMeets = res?.data?.items;
             console.log("[Back] Legal meetings to choose from: ", legalMeets);
             let meetingId = legalMeets && legalMeets[0]?.id;
-            // todo get meetingLink by meetingId #11
-            let meetingLink;
-            if (!meetingId) {
+            let meetingLink = legalMeets && legalMeets[0]?.sipAddress;
+            if (!meetingId || !meetingLink) {
                 console.log("[Back] Generating new meeting link with client's token");
-
                 try {
                     const resp = await Axios.post(
                         "https://webexapis.com/v1/meetings",
@@ -425,9 +426,9 @@ export class SocketManager {
                     );
 
                     console.log(`[Back] Created a webex meeting with id and webLink: ${resp?.data?.id}`);
-                    console.log(`[Back] Created a webex meeting with webLink: ${resp?.data?.webLink}`);
+                    console.log(`[Back] Created a webex meeting with webLink: ${resp?.data?.sipAddress}`);
                     meetingId = resp?.data?.id;
-                    meetingLink = resp?.data?.webLink;
+                    meetingLink = resp?.data?.sipAddress;
                     // ToDo better Error handling (response is 200 but with errors)
                     if (!meetingId) {
                         throw Error("Meeting is not created");
