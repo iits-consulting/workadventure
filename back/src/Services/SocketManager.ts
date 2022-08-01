@@ -78,7 +78,7 @@ function emitZoneMessage(subMessage: SubToPusherMessage, socket: ZoneSocket): vo
 
 interface MeetingData {
     userId: number;
-    meetingLink: string;
+    meet: WebexMeeting;
 }
 
 interface WebexMeeting {
@@ -115,7 +115,6 @@ export class SocketManager {
     //private rooms = new Map<string, GameRoom>();
     // List of rooms in process of loading.
     private roomsPromises = new Map<string, PromiseLike<GameRoom>>();
-    // ToDo clean up all related to saving webexMeetings code
     private webexMeetings = new Map<string, MeetingData>();
 
     constructor() {
@@ -138,7 +137,7 @@ export class SocketManager {
 
         const meet = this.webexMeetings.get(room.roomUrl);
         if (meet !== undefined) {
-            this.notifyNewMeetOnRoomJoin(room, meet.meetingLink);
+            this.notifyNewMeetOnRoomJoin(room, meet.meet.sipAddress);
         }
 
         if (!socket.writable) {
@@ -383,23 +382,11 @@ export class SocketManager {
             response.setRoomid(roomId);
 
             // Check to see if there's an active meeting for this room set up already that we don't know about yet
-            // ToDo use const for https://webexapis.com/v1
-            // ToDo make sure using inProgress is save enough (https://developer.webex.com/docs/api/v1/meetings/list-meetings)
-            const params = `meetingType=meeting&state=inProgress&siteUrl=${WEBEX_SITE_URL}`;
-            const res = await Axios.get(`https://webexapis.com/v1/meetings?integrationTag=${roomId}&${params}`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${accessToken}`,
-                },
-            });
-            // ToDo add error handling
-            console.log("[Back] Looking up meeting, got: ", res.data);
-            const legalMeets = res?.data?.items;
-            console.log("[Back] Legal meetings to choose from: ", legalMeets);
-            let meetingId = legalMeets && legalMeets[0]?.id;
+            const meet = this.webexMeetings.get(roomId);
+            let meetingId = meet?.meet.id;
             // todo get meetingLink by meetingId #11
-            let meetingLink;
-            if (!meetingId) {
+            let meetingLink = meet?.meet.sipAddress;
+            if (!meetingId || (meet && Date.parse(meet.meet.end) <= Date.now()) || !meetingLink) {
                 console.log("[Back] Generating new meeting link with client's token");
 
                 try {
@@ -431,6 +418,9 @@ export class SocketManager {
                     // ToDo better Error handling (response is 200 but with errors)
                     if (!meetingId) {
                         throw Error("Meeting is not created");
+                    }
+                    if (!meetingLink) {
+                        throw Error("No meeting link");
                     }
                 } catch (e) {
                     if (Axios.isAxiosError(e)) {
